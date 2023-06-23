@@ -1,0 +1,28 @@
+import subprocess
+import random
+
+def generate_random_mac():
+    mac_digits = "0123456789ABCDEF"
+    mac = ""
+    for _ in range(12):
+        mac += random.choice(mac_digits)
+    mac_address = ":".join([mac[i:i+2] for i in range(0, 12, 2)])
+    return mac_address
+
+def change_mac(interface, new_mac):
+    print(f"Changing MAC address of {interface} to {new_mac}")
+    
+    # Disable the network interface
+    subprocess.run(["netsh", "interface", "set", "interface", interface, "admin=disable"], capture_output=True, text=True)
+    
+    # Change the MAC address
+    subprocess.run(["reg", "add", "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\0001", "/v", "NetworkAddress", "/d", new_mac, "/f"], capture_output=True, text=True)
+    
+    # Enable the network interface
+    subprocess.run(["netsh", "interface", "set", "interface", interface, "admin=enable"], capture_output=True, text=True)
+
+# Usage
+interface = "Ethernet"  # Replace with the desired network interface (e.g., "Wi-Fi" or "Ethernet")
+new_mac = generate_random_mac()
+
+change_mac(interface, new_mac)
